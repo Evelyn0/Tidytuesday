@@ -8,6 +8,7 @@ format:
 ```{r, libraries}
 library(ggrepel)
 library(ggpubr)
+library(lubridate)
 library(tidytuesdayR)
 library(tidyverse)
 ```
@@ -48,10 +49,9 @@ Danielle Steel is the author with the most works on the NY Times Best Seller lis
 I am going to take a trip through his work to discover her stories.
 
 ```{r, Danielle}
-library(lubridate)
 Danielle_Steel<-nyt_titles%>%
   filter(author=="Danielle Steel")%>%
-  mutate(year=ymd(Danielle_Steel$year, truncated = 2L))
+  mutate(year=ymd(year, truncated = 2L))
 ```
 [//]: # "How many books per year did she write??"
 
@@ -98,18 +98,19 @@ P2<-Danielle_Steel%>%
   labs(x = "Year", y="Number of weeks on the list")+  
   scale_x_date(breaks = seq(min(Danielle_Steel$year), 
                             max(Danielle_Steel$year), by = "36 month"), date_labels = "%Y")+
-  theme_minimal()
+  theme_minimal()+
+  ggtitle("Danielle Steel's books ranked as #1" )
 
 ```
 
 
 ```{r, fINAL}
-title <- expression(scriptstyle("Kelly, Nicholas; White, Nicole, Glass, Loren, 03/01/2021, “The Program Era Project,” Post45 Data Collective, V1."))
+title <- expression(scriptstyle("Data from: Post45 | Viz: Eve Chanatásig | #Tidytuesday 2022 Week 19"))
 Final<-annotate_figure(
   ggarrange(P1, P2, ncol=1),
   bottom = text_grob(title) ,
   fig.lab.pos = "bottom.left"
 )
 
-ggsave("Final.png")
+ggsave("Final.png", width=7.27, height= 9.69)
 ```
