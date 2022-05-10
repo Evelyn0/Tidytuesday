@@ -1,0 +1,115 @@
+---
+title: "Tidytuesday:  March 10 2022"
+format:
+  html:
+    theme: default
+---
+
+```{r, libraries}
+library(ggrepel)
+library(ggpubr)
+library(tidytuesdayR)
+library(tidyverse)
+```
+# Data
+
+The data is saved in two objects `nyt_titles` and `nyt_full`.
+The objects are a list of the NY Times Best Seller from 1931-2020. 
+`nyt_titles` group the information by book and provide information about book's rank
+
+```{r, data}
+
+nyt_titles <- readr::read_tsv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-05-10/nyt_titles.tsv')
+nyt_full <- readr::read_tsv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-05-10/nyt_full.tsv')
+
+```
+
+A first view of my objects:
+
+```{r, inf}
+
+list(nyt_full, nyt_titles)%>%
+  map(head)
+```
+[//]: # "What can I use?"
+
+# Who has been on the NY Times Best Seller list more times?
+
+```{r, Discovering}
+
+Counting<-nyt_titles%>%
+  group_by(author)%>%
+  summarize(Times=n())%>%
+  arrange(desc(Times))
+
+head(Counting)
+```
+Danielle Steel is the author with the most works on the NY Times Best Seller list. 
+I am going to take a trip through his work to discover her stories.
+
+```{r, Danielle}
+library(lubridate)
+Danielle_Steel<-nyt_titles%>%
+  filter(author=="Danielle Steel")%>%
+  mutate(year=ymd(Danielle_Steel$year, truncated = 2L))
+```
+[//]: # "How many books per year did she write??"
+
+The first time she appeared in NY Times Best Seller list was in 1980, after that she always has been part of the NY Times best seller list.
+
+```{r, Book_year}
+
+P1<-Danielle_Steel%>%
+  group_by(year)%>%
+  summarize(Book_year=n())%>%
+  ggplot(., aes(x=year, y=Book_year))+
+  geom_line()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        plot.title = element_text(size = 10, face = "bold"))+
+  labs(x = "Year", y="Number of books")+  
+  scale_x_date(breaks = seq(min(Danielle_Steel$year), 
+                            max(Danielle_Steel$year), by = "36 month"), date_labels = "%Y", expand = c(0, 0))+
+  theme_minimal()+
+    ggtitle("Books on the NY time Best Seller list written by Danielle Steel")
+
+```
+[//]: # "How many books have been 'the number One'??"
+
+Since 1980, 35 of her books have ranked #1.
+
+```{r, Number_One}
+
+P2<-Danielle_Steel%>%
+  filter(best_rank==1)%>%
+  arrange(desc(total_weeks))%>%
+  ggplot(., aes(x=year, y=total_weeks, label=title ))+
+  geom_point(aes(color=year), show.legend = FALSE)+ 
+  scale_color_gradient(low = "blue", high = "red")+
+  geom_text_repel(aes(label = title),
+                  box.padding   = 0.5, 
+                  point.padding = 0.1,
+                  segment.color = 'grey50')+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        legend.position = "none",
+        legend.title = element_blank(),
+        plot.title = element_text(size = 10, face = "bold"))+
+  labs(x = "Year", y="Number of weeks on the list")+  
+  scale_x_date(breaks = seq(min(Danielle_Steel$year), 
+                            max(Danielle_Steel$year), by = "36 month"), date_labels = "%Y")+
+  theme_minimal()
+
+```
+
+
+```{r, fINAL}
+title <- expression(scriptstyle("Kelly, Nicholas; White, Nicole, Glass, Loren, 03/01/2021, “The Program Era Project,” Post45 Data Collective, V1."))
+Final<-annotate_figure(
+  ggarrange(P1, P2, ncol=1),
+  bottom = text_grob(title) ,
+  fig.lab.pos = "bottom.left"
+)
+
+ggsave("Final.png")
+```
