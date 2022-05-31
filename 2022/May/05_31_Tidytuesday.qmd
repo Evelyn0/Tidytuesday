@@ -4,6 +4,7 @@ format: beamer
 ---
 
 ```{r, Libraries}
+library(ggpubr)
 library(tidytuesdayR)
 library(tidyverse)
 # if you don't have devtools
@@ -38,5 +39,12 @@ Plot<-reputation%>%
 ```
 
 ```{r, ggplot}
-ggsave("Plot_Industries.png")
+title <- expression(scriptstyle("Data from: Axios and Harris Poll | Viz: Eve Chanatásig | #Tidytuesday 2022 Week 22"))
+
+Final<-annotate_figure(Plot,
+  bottom = text_grob(title) ,
+  fig.lab.pos = "bottom.left"
+)
+
+ggsave("Plot_Industries.png", width=7.27, height= 9.69)
 ```
