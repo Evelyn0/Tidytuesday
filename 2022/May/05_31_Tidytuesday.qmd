@@ -1,0 +1,42 @@
+---
+title: "Tidytuesday May 31"
+format: beamer
+---
+
+```{r, Libraries}
+library(tidytuesdayR)
+library(tidyverse)
+# if you don't have devtools
+install.packages("devtools")
+devtools::install_github("gadenbuie/ggpomological")
+library(ggpomological)
+```
+
+```{r, Data}
+poll <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-05-31/poll.csv')
+reputation <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-05-31/reputation.csv')
+```
+
+```{r, Exploring}
+Plot<-reputation%>%
+  group_by(industry)%>%
+  mutate(industry=factor(industry, levels = c("Retail", "Tech", "Food & Beverage")))%>%
+  #summarise(N=n())%>%
+  #arrange(N)%>%
+  filter(industry=="Retail" | industry=="Tech" |industry=="Food & Beverage")%>%
+  ggplot(.,aes(y=name, x=score, color=industry))+
+  geom_point()+
+  scale_color_pomological()+
+  facet_wrap(~industry, ncol = 1)+
+  theme_test() +
+  theme(legend.position = "none",
+        legend.title = element_blank())+
+  xlab(' ') +
+  ylab(' ')  +
+  ggtitle("Industries with the most presence in the Axios and Harris Poll")
+
+```
+
+```{r, ggplot}
+ggsave("Plot_Industries.png")
+```
